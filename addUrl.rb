@@ -7,7 +7,7 @@ require 'nokogiri'
 # url = cgi['url']  # formのurlを取得
 # email = cgi['mail'] # formのメールを取得
 
-url = "https://page.auctions.yahoo.co.jp/jp/auction/l1030746530"
+url = "https://page.auctions.yahoo.co.jp/jp/auction/p1030200628"
 email = "test@test.com"
 
 # URLとメールの中身が空かどうか
@@ -23,32 +23,30 @@ elsif email == ""
 end
 
 # Yahooオークションの商品ページURLかどうか
-# 入力されたURLがヤフーオークションの商品URLでない場合、「URLが間違っています。」を返す
 if !(url.match(/https:\/\/page.auctions.yahoo.co.jp\/jp\/auction\/[a-z][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]/))
     puts "Yahooオークションの商品ページURLではありません。"
     return
 end
 puts "Yahooオークションの商品ページURLです。"
 
-# 入力された商品URLが終了していた場合、「この商品はもうすでに終了しています」を返す
-#urlからアクセス、全体データ取得
+# urlからアクセス、全体データ取得
 charset = nil
 html = URI.open(url) do |f|
-charset = f.charset    #文字種別を取得
-f.read                 #htmlを読み込んで変数htmlに渡す
+charset = f.charset    # 文字種別を取得
+f.read                 # htmlを読み込んで変数htmlに渡す
 end
 
-#nokogiriで扱えるように取得したHTMLを変換
+# nokogiriで扱えるように取得したHTMLを変換
 doc = Nokogiri::HTML.parse(html, nil, charset)
-if doc.xpath('//*[@id="closedHeader"]/div')
-    puts "この商品はもうすでに終了しています"
+# 商品の出品が終了しているかどうか
+if doc.at_css('div.ClosedHeader__tag') 
+    puts 'URLの商品はもうすでに終了しています。'
     return
-end
+end 
 
-# メールアドレスかどうか
-# 入力された文字列がメール出ない場合、「メールが間違っています」を返す
+# 入力された文字列がメールアドレスかどうか
 if !(email.match(/\A[\w+\-.]+@[a-z\d\-.]+\.[a-z]+\z/i))
-    puts "メールが間違っています"
+    puts "メールアドレスが間違っています"
     return
 end
 puts "メールアドレスです。"
